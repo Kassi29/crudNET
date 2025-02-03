@@ -10,7 +10,7 @@ obj/
 
 # Ignore user-specific settings and environment files
 appsettings.Development.json
-appsettings.json
+
 
 # Ignore project files
 *.csproj.user
