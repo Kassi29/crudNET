@@ -1,0 +1,19 @@
+# Ignore Visual Studio config files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Ignore build output directories
+bin/
+obj/
+
+# Ignore user-specific settings and environment files
+appsettings.Development.json
+appsettings.json
+
+# Ignore project files
+*.csproj.user
+
+# Ignore the solution file for IDE-specific configurations
+*.sln
