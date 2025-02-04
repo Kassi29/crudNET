@@ -13,10 +13,12 @@ namespace ContosoUniversity.Controllers
     public class StudentsController : Controller
     {
         private readonly SchoolContext _context;
+        private readonly ILogger<StudentsController> _logger;
 
-        public StudentsController(SchoolContext context)
+        public StudentsController(SchoolContext context, ILogger<StudentsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: Students
@@ -96,38 +98,39 @@ namespace ContosoUniversity.Controllers
         }
 
         // POST: Students/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+
+        [HttpPost , ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,LastName,FirstMidName,EnrollmentDate")] Student student)
+        public async Task<IActionResult> EditPost(int? id) 
         {
-            if (id != student.ID)
+            if (id == null)
             {
                 return NotFound();
             }
+            var studentToUpdate = await _context.Students.FirstOrDefaultAsync(s => s.ID == id);
+            if (studentToUpdate == null) { 
+                return NotFound();
+            }    
+            if (await TryUpdateModelAsync<Student>(
+                    studentToUpdate, "", s =>
+                    s.FirstMidName,
+                    s => s.LastName,
+                    s => s.EnrollmentDate
+                    ))
+                {
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(student);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!StudentExists(student.ID))
-                    {
-                        return NotFound();
                     }
-                    else
-                    {
-                        throw;
+                    catch (DbUpdateException ex) {
+                        _logger.LogError(ex, "An error occurred while updating the student record.");
+
                     }
+                
                 }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(student);
+                return View(studentToUpdate);
         }
 
         // GET: Students/Delete/5
