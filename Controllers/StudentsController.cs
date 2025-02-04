@@ -134,7 +134,7 @@ namespace ContosoUniversity.Controllers
         }
 
         // GET: Students/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, bool? saveChagesError = false)
         {
             if (id == null)
             {
@@ -142,29 +142,54 @@ namespace ContosoUniversity.Controllers
             }
 
             var student = await _context.Students
+                .AsNoTracking()
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (student == null)
             {
                 return NotFound();
             }
 
-            return View(student);
+            if (saveChagesError.GetValueOrDefault())
+            {
+                ViewData["ErrorMessage"] =
+                    "Delete failed. Try again, and if the problem persists " +
+            "see your system administrator.";
+            }
+            return View(student); ;
         }
 
+        
         // POST: Students/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var student = await _context.Students.FindAsync(id);
-            if (student != null)
-            {
-                _context.Students.Remove(student);
+            if (student == null) {
+                return RedirectToAction(nameof(Index));
+
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _context.Students.Remove(student);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex) {
+                _logger.LogError(ex, "An error occurred while deleting the student with the id " +id);
+
+
+                return RedirectToAction(nameof(Delete),
+                    new
+                    {
+                        id,
+                        saveChangesError = true
+                    }
+                    );         
+            }
         }
+
 
         private bool StudentExists(int id)
         {
