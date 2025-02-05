@@ -25,7 +25,7 @@ namespace ContosoUniversity.Controllers
         public async Task<IActionResult> Index(string sortOrder)
         {
             ViewData["NameSortParam"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
-            ViewData["DateSortParem"] = sortOrder == "Date" ? "date_desc" : "Date";
+            ViewData["DateSortParam"] = sortOrder == "Date" ? "date_desc" : "Date";
             var students = from s in _context.Students
                            select s;
             switch(sortOrder){
